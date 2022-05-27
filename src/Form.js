@@ -18,29 +18,55 @@ function Form() {
     const [loading, setLoading] = React.useState(false);
     const [result, setResult] = React.useState("");
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const form_data = new FormData();
-        form_data.append("1", form.pregnancies);
-        form_data.append("2", form.glucose);
-        form_data.append("3", form.blood_pressure);
-        form_data.append("4", form.skin_thickness);
-        form_data.append("5", form.insulin_level);
-        form_data.append("6", form.bmi);
-        form_data.append("7", form.diabetes_pedigree);
-        form_data.append("8", form.age);
+        // const form_data = new FormData();
+        // form_data.append("1", form.pregnancies);
+        // form_data.append("2", form.glucose);
+        // form_data.append("3", form.blood_pressure);
+        // form_data.append("4", form.skin_thickness);
+        // form_data.append("5", form.insulin_level);
+        // form_data.append("6", form.bmi);
+        // form_data.append("7", form.diabetes_pedigree);
+        // form_data.append("8", form.age);
+
+        const form_data = {
+            '1': form.pregnancies,
+            '2': form.glucose,
+            '3': form.blood_pressure,
+            '4': form.skin_thickness,
+            '5': form.insulin_level,
+            '6': form.bmi,
+            '7': form.diabetes_pedigree,
+            '8': form.age
+        }
+
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json');
+        headers.append('Accept', 'application/json');
+
+        headers.append('Access-Control-Allow-Origin', 'http://localhost:3000');
+        headers.append('Access-Control-Allow-Credentials', 'true');
+
+        headers.append('GET', 'POST', 'OPTIONS');
 
         setLoading(true);
-        
-        fetch('https://ds-model-08.herokuapp.com/predict', {
+        const test_domain = "http://localhost:5000";
+        const prod_domain = "https://ds-model-08.herokuapp.com"
+        await fetch(
+            test_domain+'/predict',
+            // prod_domain+'/predict', 
+            {
             method: 'POST',
-            body: form_data
-        }).then(response => response.text())
-            .then(html => {
-                setResult(html);
-                setLoading(false);
-            })
+            body: JSON.stringify(form_data),
+            headers: headers
+        }).then(response => response.json())
+        .then(json =>{
+            setResult(json);
+            setLoading(false);
+        })
     };
 
     const onChange = (event) => {
@@ -133,8 +159,9 @@ function Form() {
             <button type="submit" disabled={loading}>{loading ? "Predicting result..." : "Submit Form"}</button>
             {result && <span onClick={handleClear}>Clear Prediction</span>}
 
-         {result && <div dangerouslySetInnerHTML={{ __html: result }} className="result" />}
-        </form>
+         {/* {result && <div dangerouslySetInnerHTML={{ __html: result }} className="result" />} */}
+            { result && <div className="result">{result.pred}</div>}
+         </form>
     );
 }
 export default Form;
